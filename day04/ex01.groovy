@@ -1,53 +1,70 @@
-def fileContentAsArray = []
-def order = []
-def lastLine = null
-def boards = []
-def tempBoard = []
-new File('sample.txt').eachLine { it, index ->
-    def line = it.trim()
-    //println("${index}: ${it}")
-    if (index <= 1) {
-        //it inside collect is collect iterator and not from eachLine
-       order = it.split(',').collect{Integer.parseInt(it)}
-       //println("order= ${order}")
-    } else if(index == 2) {
-        // skip
+(order, boards) = parseFile('sample.txt')
+for(i in order) {
+    boards = boards.collect{b -> b.collect{r -> r.collect{[it[0],(it[0] == i ? true : it[1])]}}}
+    boards_T = boards.collect{b -> b.transpose()}
+    def winningBoardIndex = boards.findIndexOf{b -> b.any{r -> r.every{it[1]}}} //rows
+    if(winningBoardIndex != -1 ) {
+        def wBoard = boards[winningBoardIndex]
+        wBoard.each{r -> r.each{print "${it[0]},${it[1]?'T':'F'} "} println ""}
+        def score = 0
+        wBoard.each{r -> r.each{ score += (!it[1] ? it[0] : 0)}}
+        score *= i
+        println "score=${score}\n"
+        break
     }
-    else if (line.isEmpty()){
-        //println("board= ${tempBoard}")
-        boards.add(tempBoard)
-        tempBoard = []
-    } else {
-        tempBoard.add(line.split(' ').findAll{!it.isEmpty()}.collect{Integer.parseInt(it)})
-    }
-    lastLine = line
 }
-//println("board= ${tempBoard}")
-boards.add(tempBoard)
-def initialBoards = boards
-println('start') 
-order.each{ n ->
-    boards = boards.collect{board -> board.collect{row -> row.findAll{it != n}}}
-    try {
-        boards.eachWithIndex{board, boradIndex -> board.eachWithIndex{row,rowIndex -> 
-            if(row.isEmpty()) {
-                //can not break each closure, so throw error instead
-                throw new Exception("we won ${boradIndex}, ${rowIndex}")
-            }
-        }}
-    } catch (error){
-        def eMatcher = "${error}" =~ /.* we won (?<boradIndex>[0-9]+), (?<rowIndex>[0-9]+).*/
-        if(eMatcher.matches()) {
-            def boradIndex = Integer.parseInt(eMatcher.group('boradIndex'))
-            def rowIndex = Integer.parseInt(eMatcher.group('rowIndex'))
-            def winningBoard = boards[boradIndex]
-            def sumUnmarked = 0
-            winningBoard.findAll{!it.isEmpty()}.each{sumUnmarked += it.sum()}
-            throw new Exception("sumUnmarked= ${sumUnmarked}, final score= ${sumUnmarked * n}")
-        } else {
-             throw error
-        }
-    }
-    //println("boards= ${boards}")
-}
+/*
+def mtrx1 =[ 
+    [[1,false],[2,true],[3,false]],
+    [[4,false],[5,false],[6,false]],
+    [[7,false],[8,true],[9,true]]
+]
+def mtrx2 =[ 
+    [[1,false],[2,true],[3,false]],
+    [[4,false],[12,false],[6,false]],
+    [[11,false],[8,true],[9,true]]
+]
+//println("row bingo? ${mtrx.any{row -> row.every{it[1]}}}")
+//println("column bingo? ${mtrx.transpose().any{row -> row.every{it[1]}}}")
+//def mtrxs = [mtrx1, mtrx1.transpose()]
+def mtrxs = [mtrx1, mtrx2]
+def n = 12
+mtrxs = mtrxs.collect{m -> m.collect{row -> row.collect{item -> [item[0],(item[0] == n ? true : item[1])]}}}
+mtrxs.each {m -> m.each{r -> r.each{i -> print "${i[0]},${i[1]?'T':'F'} "} println ""} println ""}
+println("row bingo? ${mtrxs.any{m -> m.any{row -> row.every{it[1]}}}}")
+println("row bingo matrix index: ${mtrxs.findIndexOf{m -> m.any{r -> r.every{it[1]}}}}")
+mtrxs_T = mtrxs.collect{m -> m.transpose()}
+println("column bingo? ${mtrxs_T.any{m -> m.any{row -> row.every{it[1]}}}}")
+println("column bingo matrix index: ${mtrxs_T.findIndexOf{m -> m.any{r -> r.every{it[1]}}}}")
+*/
 return 0
+
+def parseFile(file) {
+    def fileContentAsArray = []
+    def order = []
+    def lastLine = null
+    def boards = []
+    def tempBoard = []
+    new File(file).eachLine { it, index ->
+        def line = it.trim()
+        //println("${index}: ${it}")
+        if (index <= 1) {
+            //it inside collect is collect iterator and not from eachLine
+        order = it.split(',').collect{Integer.parseInt(it)}
+        //println("order= ${order}")
+        } else if(index == 2) {
+            // skip
+        }
+        else if (line.isEmpty()){
+            //println("board= ${tempBoard}")
+            boards.add(tempBoard)
+            tempBoard = []
+        } else {
+            tempBoard.add(line.split(' ').findAll{!it.isEmpty()}.collect{[Integer.parseInt(it),false]})
+        }
+        lastLine = line
+    }
+    //println("board= ${tempBoard}")
+    boards.add(tempBoard)
+    return [order, boards]
+}

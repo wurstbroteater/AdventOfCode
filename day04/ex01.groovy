@@ -1,9 +1,9 @@
 (order, boards) = parseFile('sample.txt')
-for(i in order) {
-    boards = boards.collect{b -> b.collect{r -> r.collect{[it[0],(it[0] == i ? true : it[1])]}}}
-    boards_T = boards.collect{b -> b.transpose()}
-    def winningBoardIndex = boards.findIndexOf{b -> b.any{r -> r.every{it[1]}}} //rows
-    if(winningBoardIndex != -1 ) {
+for (i in order) {
+    boards = boards.collect { b -> b.collect { r -> r.collect { [it[0], (it[0] == i ? true : it[1])] } } }
+    boards_T = boards.collect { b -> b.transpose() }
+    def winningBoardIndex = boards.findIndexOf { b -> b.any { r -> r.every { it[1] } } } //rows
+    if (winningBoardIndex != -1) {
         println "score=${getSumOfUnmarked(boards[winningBoardIndex]) * i}\n"
         break
     }
@@ -36,7 +36,7 @@ return 0
 
 def getSumOfUnmarked(board) {
     def sum = 0
-    board.each{r -> r.each{ sum += (!it[1] ? it[0] : 0)}}
+    board.each { r -> r.each { sum += (!it[1] ? it[0] : 0) } }
     return sum
 }
 
@@ -51,17 +51,16 @@ def parseFile(file) {
         //println("${index}: ${it}")
         if (index <= 1) {
             //it inside collect is collect iterator and not from eachLine
-        order = it.split(',').collect{Integer.parseInt(it)}
-        //println("order= ${order}")
-        } else if(index == 2) {
+            order = it.split(',').collect { Integer.parseInt(it) }
+            //println("order= ${order}")
+        } else if (index == 2) {
             // skip
-        }
-        else if (line.isEmpty()){
+        } else if (line.isEmpty()) {
             //println("board= ${tempBoard}")
             boards.add(tempBoard)
             tempBoard = []
         } else {
-            tempBoard.add(line.split(' ').findAll{!it.isEmpty()}.collect{[Integer.parseInt(it),false]})
+            tempBoard.add(line.split(' ').findAll { !it.isEmpty() }.collect { [Integer.parseInt(it), false] })
         }
         lastLine = line
     }

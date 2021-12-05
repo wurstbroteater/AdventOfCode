@@ -1,3 +1,4 @@
 .vscode
-.intellij
+.idea
 .vs
+*.iml

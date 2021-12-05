@@ -4,12 +4,7 @@ for(i in order) {
     boards_T = boards.collect{b -> b.transpose()}
     def winningBoardIndex = boards.findIndexOf{b -> b.any{r -> r.every{it[1]}}} //rows
     if(winningBoardIndex != -1 ) {
-        def wBoard = boards[winningBoardIndex]
-        wBoard.each{r -> r.each{print "${it[0]},${it[1]?'T':'F'} "} println ""}
-        def score = 0
-        wBoard.each{r -> r.each{ score += (!it[1] ? it[0] : 0)}}
-        score *= i
-        println "score=${score}\n"
+        println "score=${getSumOfUnmarked(boards[winningBoardIndex]) * i}\n"
         break
     }
 }
@@ -38,6 +33,12 @@ println("column bingo? ${mtrxs_T.any{m -> m.any{row -> row.every{it[1]}}}}")
 println("column bingo matrix index: ${mtrxs_T.findIndexOf{m -> m.any{r -> r.every{it[1]}}}}")
 */
 return 0
+
+def getSumOfUnmarked(board) {
+    def sum = 0
+    board.each{r -> r.each{ sum += (!it[1] ? it[0] : 0)}}
+    return sum
+}
 
 def parseFile(file) {
     def fileContentAsArray = []

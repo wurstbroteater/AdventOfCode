@@ -1,2 +1,2 @@
-# AOC2021
-Solution Scripts for Advent of Code 2021 
+# Advent of Code
+Solution scripts for enjoyable Advent of Code journeys 

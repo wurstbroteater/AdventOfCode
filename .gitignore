@@ -1,4 +1,8 @@
-.vscode
-.idea
-.vs
-*.iml
+**/*.class
+**/*.iml
+**/puzzle
+
+**/.idea
+**/out
+**/.vscode
+**/.vs

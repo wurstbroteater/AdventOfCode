@@ -24,12 +24,18 @@ public class Solution {
             }
             return total;
         }
+
+        int getCubePower() {
+            return getMaxOccurrenceOfColor("red") * getMaxOccurrenceOfColor("green") * getMaxOccurrenceOfColor("blue");
+        }
     }
 
     public static void main(String[] args) {
         final List<Game> games = readFile("puzzle");
-        final int solution = games.stream().filter(Solution::possibleGame).map(g -> g.id).reduce(0, Integer::sum);
-        System.out.println("Solution is " + solution);
+        final int solutionPartOne = games.stream().filter(Solution::possibleGame).map(g -> g.id).reduce(0, Integer::sum);
+        System.out.println("1. Solution is " + solutionPartOne);
+        final int solutionPartTwo = games.stream().map(Game::getCubePower).reduce(0, Integer::sum);
+        System.out.println("2. Solution is " + solutionPartTwo);
     }
 
     private static boolean possibleGame(final Game game) {

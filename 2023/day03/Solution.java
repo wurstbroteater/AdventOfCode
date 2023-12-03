@@ -97,7 +97,7 @@ public class Solution {
                 lineCounter++;
             }
         } catch (IOException ex) {
-            throw new IllegalStateException("Error while parsing puzzle.txt: " + ex.getCause());
+            throw new IllegalStateException("Error while parsing file: " + ex.getCause());
         }
         return schematic;
     }

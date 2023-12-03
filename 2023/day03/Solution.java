@@ -14,7 +14,6 @@ public class Solution {
     private static final Map<Integer, List<Number>> lineToNumbers = new HashMap<>();
 
     private record Number(int value, int start, int end) {
-
         boolean isInRange(int x) {
             return x >= start && x <= end;
         }
@@ -23,20 +22,24 @@ public class Solution {
     private static final char[][] engineSchematic = parseSchematic("puzzle");
 
     public static void main(String[] args) {
-        for (Integer key : lineToNumbers.keySet()) {
-            System.out.println(key + " : " + lineToNumbers.get(key));
-        }
         final List<Integer> adjacentNumbers = new ArrayList<>();
+        final List<Integer> gearRatios = new ArrayList<>();
         for (int i = 0; i < engineSchematic.length; i++) {
             for (int j = 0; j < engineSchematic[i].length; j++) {
                 final char current = engineSchematic[i][j];
                 if (isSymbol(current)) {
-                    adjacentNumbers.addAll(getAdjacentNumbers(i, j).stream().map(Number::value).toList());
+                    //part 1
+                    final List<Integer> neighbours = getAdjacentNumbers(i, j).stream().map(Number::value).toList();
+                    adjacentNumbers.addAll(neighbours);
+                    //part 2
+                    if (current == '*' && neighbours.size() == 2) {
+                        gearRatios.add(neighbours.get(0) * neighbours.get(1));
+                    }
                 }
             }
         }
-        System.out.println(adjacentNumbers);
         System.out.println("Solution part 1: " + adjacentNumbers.stream().reduce(0, Integer::sum));
+        System.out.println("Solution part 2: " + gearRatios.stream().reduce(0, Integer::sum));
     }
 
     private static List<Number> getAdjacentNumbers(int i, int j) {
@@ -66,10 +69,6 @@ public class Solution {
         return c != null && "/=+-:*!@#$%^&*()\"{}_[]|\\?/<>,".contains(c.toString());
     }
 
-    private static boolean isPeriod(Character c) {
-        return c != null && c == '.';
-    }
-
     private static char[][] parseSchematic(final String name) {
         final char[][] schematic;
         //TODO: Maybe switch from BufferedReader to to filestream in general
@@ -77,7 +76,6 @@ public class Solution {
              final Stream<String> fileStream = Files.lines(Path.of(name), StandardCharsets.UTF_8)) {
             String line = bf.readLine();
             schematic = new char[(int) fileStream.count()][line.length()];
-
             int lineCounter = 0;
             while (line != null) {
                 String currentNumberFragment = null;
@@ -86,7 +84,6 @@ public class Solution {
                 for (int i = 0; i < line.length(); i++) {
                     final Character nextChar = i == line.length() - 1 ? null : line.charAt(i + 1);
                     final Character currentChar = line.charAt(i);
-                    //parse number
                     if (isDigit(currentChar)) {
                         currentNumberFragment = currentNumberFragment == null ? currentChar.toString() : currentNumberFragment + currentChar;
                         if (!isDigit(nextChar)) {
@@ -104,5 +101,4 @@ public class Solution {
         }
         return schematic;
     }
-
 }

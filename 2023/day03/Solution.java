@@ -61,11 +61,11 @@ public class Solution {
         return out;
     }
 
-    private static boolean isDigit(Character c) {
-        return c != null && c >= '0' && c <= '9';
+    private static boolean isDigit(final Character c) {
+        return c != null && Character.isDigit(c);
     }
 
-    private static boolean isSymbol(Character c) {
+    private static boolean isSymbol(final Character c) {
         return c != null && "/=+-:*!@#$%^&*()\"{}_[]|\\?/<>,".contains(c.toString());
     }
 
@@ -97,7 +97,7 @@ public class Solution {
                 lineCounter++;
             }
         } catch (IOException ex) {
-            throw new IllegalStateException("Error while parsing file: " + ex.getCause());
+            throw new IllegalStateException("Error while parsing schematic file: " + ex.getCause());
         }
         return schematic;
     }

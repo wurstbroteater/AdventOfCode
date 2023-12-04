@@ -7,17 +7,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Solution {
-    private static final List<Card> puzzle = readFile("ex_1");
+    private static final List<Card> puzzle = readFile("puzzle");
 
     private record Card(int id, int points, Set<Integer> winningNumbers) {
-
-        Set<Integer> getEarnedScratchcardIds() {
-            final Set<Integer> out = new HashSet<>();
-            for (int i = 1; i <= winningNumbers.size(); i++) {
-                out.add(this.id + i);
-            }
-            return out;
-        }
 
         List<Card> getEarnedScratchcards() {
             final List<Card> out = new ArrayList<>();
@@ -31,19 +23,26 @@ public class Solution {
         public boolean equals(Object c) {
             return c instanceof Card && this.id == ((Card) c).id;
         }
-    }
 
+        public String toString() {
+            return "[Card " + id + "]";
+        }
+    }
 
     public static void main(String[] args) {
         final List<Card> copies = new ArrayList<>();
         puzzle.forEach(it -> {
-            var l = it.getEarnedScratchcards();
-            System.out.println(l.stream().map(Card::id).toList());
-            copies.addAll(l);
+            final List<Card> earned = it.getEarnedScratchcards();
+            copies.addAll(earned);
+            //with stream() 14 ms, with parallelStream() 1,4 ms
+            final int amount = Collections.frequency(copies.parallelStream().map(Card::id).toList(), it.id) + 1;
+            for (int i = 1; i < amount; i++) {
+                copies.addAll(earned);
+            }
         });
+        copies.addAll(puzzle);
         System.out.println("Solution part 1: " + puzzle.stream().map(Card::points).reduce(0, Integer::sum));
-        System.out.println(copies.stream().map(Card::id).toList());
-
+        System.out.println("Solution part 2: " + copies.stream().distinct().map(it -> Collections.frequency(copies, it)).reduce(0, Integer::sum));
     }
 
     private static List<Card> readFile(final String name) {

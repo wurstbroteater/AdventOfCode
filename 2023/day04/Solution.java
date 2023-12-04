@@ -23,10 +23,6 @@ public class Solution {
         public boolean equals(Object c) {
             return c instanceof Card && this.id == ((Card) c).id;
         }
-
-        public String toString() {
-            return "[Card " + id + "]";
-        }
     }
 
     public static void main(String[] args) {

@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class Node {
 
     private String name;
@@ -29,11 +31,26 @@ public class Node {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return Objects.equals(getName(), node.getName()) && Objects.equals(l.getName(), node.l.getName()) && Objects.equals(r.getName(), node.r.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), l.getName(), r.getName());
+    }
+
+    @Override
     public String toString() {
         return "Node[" +
                 "name=" + name +
+                /*
                 ", left=" + l.getName() +
                 ", right=" + r.getName() +
+                 */
                 ']';
     }
 }

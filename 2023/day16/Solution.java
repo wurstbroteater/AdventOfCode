@@ -47,31 +47,31 @@ public class Solution {
     private record Beam(int x, int y, int currentDir) {
 
         private Beam performStep(Beam beam) {
-            return switch (currentDir) {
-                case 0 -> new Beam(beam.x(), beam.y() - 1, currentDir);
-                case 1 -> new Beam(beam.x() + 1, beam.y(), currentDir);
-                case 2 -> new Beam(beam.x(), beam.y() + 1, currentDir);
-                case 3 -> new Beam(beam.x() - 1, beam.y(), currentDir);
-                default -> throw new IllegalStateException(STR."Unknown direction \{currentDir}");
+            return switch (beam.currentDir()) {
+                case 0 -> new Beam(beam.x(), beam.y() - 1, beam.currentDir());
+                case 1 -> new Beam(beam.x() + 1, beam.y(), beam.currentDir());
+                case 2 -> new Beam(beam.x(), beam.y() + 1, beam.currentDir());
+                case 3 -> new Beam(beam.x() - 1, beam.y(), beam.currentDir());
+                default -> throw new IllegalStateException(STR."Unknown direction \{beam.currentDir()}");
             };
         }
 
         private Beam changeDir(Beam beam, String tile, boolean oldBeam) {
             if (tile.equals("/")) {
-                switch (beam.currentDir) {
+                switch (beam.currentDir()) {
                     case 0 -> new Beam(beam.x(), beam.y(), 1);
                     case 1 -> new Beam(beam.x(), beam.y(), 2);
                     case 2 -> new Beam(beam.x(), beam.y(), 3);
                     case 3 -> new Beam(beam.x(), beam.y(), 0);
-                    default -> throw new IllegalStateException(STR."Unknown direction \{currentDir}");
+                    default -> throw new IllegalStateException(STR."Unknown direction \{beam.currentDir()}");
                 }
             } else if (tile.equals("\\")) {
-                switch (beam.currentDir) {
+                switch (beam.currentDir()) {
                     case 0 -> new Beam(beam.x(), beam.y(), 3);
                     case 1 -> new Beam(beam.x(), beam.y(), 0);
                     case 2 -> new Beam(beam.x(), beam.y(), 1);
                     case 3 -> new Beam(beam.x(), beam.y(), 2);
-                    default -> throw new IllegalStateException(STR."Unknown direction \{currentDir}");
+                    default -> throw new IllegalStateException(STR."Unknown direction \{beam.currentDir()}");
                 }
             } else if (tile.equals("-") && beam instanceof Beam(int cx, int cy, int dir) && (dir == 0 || dir == 2)) {
                 //left first for old beam
@@ -102,12 +102,13 @@ public class Solution {
     }
 
     private static Set<Tile> findEnergizedTiles(final List<List<Solution.Tile>> grid) {
-        final Set<Tile> out =new HashSet<>();
-        for(List<Tile> row: grid) {
+        final Set<Tile> out = new HashSet<>();
+        for (List<Tile> row : grid) {
             out.addAll(row.stream().filter(t -> t.energy > 0).toList());
         }
         return out;
     }
+
     public static void main(String[] args) {
         final List<List<Tile>> grid = parseFile("ex_1");
         final int maxX = grid.getFirst().size() - 1;
@@ -130,6 +131,7 @@ public class Solution {
 
                 if ((tile.label.equals("|") || tile.label.equals("-"))) {
                     newBeams.add(beam.move(tile.label, false, maxX, maxY));
+                    System.out.println(newBeams.size());
                 }
                 oldBeams.add(beam.move(tile.label, true, maxX, maxY));
             }
@@ -137,15 +139,15 @@ public class Solution {
             beams = oldBeams;
             energizedTiles = findEnergizedTiles(grid);
             steps--;
-            if(energizedTilesOccurrences == energizedTiles.size()) {
+            if (energizedTilesOccurrences == energizedTiles.size()) {
                 //break;
             }
         }
         System.out.println("steps " + steps);
         System.out.println(energizedTiles.size());
         grid.forEach(r -> {
-            for(Tile t: r ) {
-                if(t.energy > 0) {
+            for (Tile t : r) {
+                if (t.energy > 0) {
                     System.out.print("#");
                 } else {
                     System.out.print(".");
@@ -160,11 +162,11 @@ public class Solution {
         try (final Stream<String> fileStream = Files.lines(Path.of(name), StandardCharsets.UTF_8)) {
             final List<String> input = fileStream.toList();
             final List<List<Tile>> out = new ArrayList<>();
-            for(int y = 0; y < input.size(); y++) {
+            for (int y = 0; y < input.size(); y++) {
                 final String[] intermediate = input.get(y).split("");
                 final List<Tile> row = new ArrayList<>();
-                for(int x = 0; x < intermediate.length; x ++) {
-                    row.add(new Tile(intermediate[x], x,y));
+                for (int x = 0; x < intermediate.length; x++) {
+                    row.add(new Tile(intermediate[x], x, y));
                 }
                 out.add(row);
             }

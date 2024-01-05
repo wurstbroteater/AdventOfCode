@@ -3,12 +3,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Solution {
-    private static final AtomicInteger processedPositions = new AtomicInteger(0);
 
     private static class Tile {
         String label;
@@ -108,10 +106,7 @@ public class Solution {
         }
     }
 
-    private record StartPos(int x, int y, int dir) {
-    }
-
-    private record Tuple(StartPos start, List<List<Tile>> grid) {
+    private record StartPos(int x, int y, int dir, List<List<Tile>> grid) {
     }
 
     // Directions: North = 0, East = 1, South = 2, West = 3
@@ -119,43 +114,10 @@ public class Solution {
         final List<List<Tile>> grid = parseFile("puzzle");
         final int maxX = grid.getFirst().size() - 1;
         final int maxY = grid.size() - 1;
-        // to optimize parallelStream() usage, we need to attach initial grids to StartPos but this causes memory
-        // overflows. Instead, create Tuples of (StartPos, Grid)  and parallel process in chunks later.
-        final List<StartPos> startPositions = createStartPositions(maxX, maxY);
-        System.out.println(STR."Solution part 1: \{findEnergizedTiles(new StartPos(0, 0, 1), copyInitialGrid(grid))}");
-        /*
-        System.out.println(createStartPositions(maxX, maxY, maxX, maxY) + " 0 3");
-        System.out.println(createStartPositions(0, maxY, maxX, maxY) + " 0 1");
-        System.out.println(createStartPositions(0, 0, maxX, maxY) + " 1 2");
-        System.out.println(createStartPositions(maxX, 0, maxX, maxY) + " 2 3");
-
-        System.out.println(createStartPositions(maxX / 2, 0, maxX, maxY) + " 1 2 3");
-        System.out.println(createStartPositions(maxX, maxY / 2, maxX, maxY) + " 0 2 3");
-        System.out.println(createStartPositions(maxX / 2, maxY, maxX, maxY) + " 0 1 3");
-        System.out.println(createStartPositions(0, maxY / 2, maxX, maxY) + " 0 1 2");
-        System.out.println(createStartPositions(maxX / 2, maxY / 2, maxX, maxY) + " 0 1 3 4");
-         */
-        final long startTime = System.currentTimeMillis();
-        //took 68,22 min, 8258 too high, 8034 to low
-        //System.out.println(STR."Solution part 2: \{startPositions.stream().parallel().map(startPos -> findEnergizedTiles(startPos, copyInitialGrid(grid))).max(Integer::compare).orElseThrow()}");
-
-        //took milliseconds
-        final int maxThreads = 15;
-        int max = 0;
-        for (int i = 0; i < 21; i += maxThreads) {
-            int finalI = i;
-            final List<Tuple> grids = IntStream.range(0, maxThreads).parallel().mapToObj(j -> new Tuple(startPositions.get(finalI + j), copyInitialGrid(grid))).toList();
-            max = Math.max(max, grids.parallelStream().map(tuple -> findEnergizedTiles(tuple.start, tuple.grid)).max(Comparator.naturalOrder()).orElseThrow());
-
-            if (processedPositions.addAndGet(maxThreads) % (100 + maxThreads) == 0) {
-                System.out.println(STR."\{String.format("Processed %.2f", ((1.0 / startPositions.size()) * (double) processedPositions.get()) * 100)} %");
-            }
-            System.out.println(STR."\{String.format("Processed %.2f", ((1.0 / startPositions.size()) * (double) processedPositions.get()) * 100)} %");
-        }
-        System.out.println(max);
-        final long duration = System.currentTimeMillis() - startTime;
-        System.out.println(STR."Calculations for \{startPositions.size()} took \{duration / 1000L} s");
-
+        final List<StartPos> startPositions = createStartPositions(maxX, maxY, grid);
+        System.out.println(STR."Solution part 1: \{findEnergizedTiles(new StartPos(0, 0, 1, copyInitialGrid(grid)))}");
+        // Calculation time is up to 45 s.
+        System.out.println(STR."Solution part 2: \{startPositions.stream().parallel().map(Solution::findEnergizedTiles).max(Integer::compare).orElseThrow()}");
     }
 
     private static List<List<Tile>> copyInitialGrid(final List<List<Tile>> grid) {
@@ -166,38 +128,40 @@ public class Solution {
         return out;
     }
 
-    private static List<StartPos> createStartPositions(final int maxX, final int maxY) {
+    private static List<StartPos> createStartPositions(final int maxX, final int maxY, final List<List<Tile>> grid) {
         final List<StartPos> out = new ArrayList<>();
         for (int y = 0; y <= maxY; y++) {
             for (int x = 0; x <= maxX; x++) {
-                out.addAll(createStartPositions(x, y, maxX, maxY));
+                if ((y == 0 || x == 0) || (y == maxY || x == maxX)) {
+                    out.addAll(createStartPositions(x, y, maxX, maxY, grid));
+                }
             }
         }
         return out;
     }
 
-    private static List<StartPos> createStartPositions(final int x, final int y, final int maxX, final int maxY) {
+    private static List<StartPos> createStartPositions(final int x, final int y, final int maxX, final int maxY, final List<List<Tile>> grid) {
         final List<StartPos> out = new ArrayList<>();
         IntStream.rangeClosed(0, 3).forEach(dir -> {
             switch (dir) {
                 case 0:
                     if (x <= maxX && y == maxY || y > 0 && y + 1 <= maxY) {
-                        out.add(new StartPos(x, y, dir));
+                        out.add(new StartPos(x, y, dir, copyInitialGrid(grid)));
                     }
                     break;
                 case 1:
                     if (x < maxX) {
-                        out.add(new StartPos(x, y, dir));
+                        out.add(new StartPos(x, y, dir, copyInitialGrid(grid)));
                     }
                     break;
                 case 2:
                     if (y < maxY) {
-                        out.add(new StartPos(x, y, dir));
+                        out.add(new StartPos(x, y, dir, copyInitialGrid(grid)));
                     }
                     break;
                 default:
                     if (x - 1 >= 0) {
-                        out.add(new StartPos(x, y, dir));
+                        out.add(new StartPos(x, y, dir, copyInitialGrid(grid)));
                     }
                     break;
             }
@@ -213,7 +177,8 @@ public class Solution {
         return out;
     }
 
-    private static int findEnergizedTiles(final StartPos start, final List<List<Tile>> grid) {
+    private static int findEnergizedTiles(final StartPos start) {
+        final List<List<Tile>> grid = start.grid();
         final int maxX = grid.getFirst().size() - 1;
         final int maxY = grid.size() - 1;
         List<Beam> beams = new ArrayList<>();
@@ -256,7 +221,7 @@ public class Solution {
             }
             return out;
         } catch (IOException ex) {
-            throw new IllegalStateException("Error while parsing schematic file: " + ex.getCause());
+            throw new IllegalStateException(STR."Error while parsing schematic file: \{ex.getCause()}");
         }
     }
 }

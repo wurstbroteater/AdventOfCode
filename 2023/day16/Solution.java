@@ -111,21 +111,51 @@ public class Solution {
     private record StartPos(int x, int y, int dir) {
     }
 
+    private record Tuple(StartPos start, List<List<Tile>> grid) {
+    }
+
     // Directions: North = 0, East = 1, South = 2, West = 3
     public static void main(String[] args) {
-        final List<List<Tile>> grid = parseFile("ex_1");
+        final List<List<Tile>> grid = parseFile("puzzle");
         final int maxX = grid.getFirst().size() - 1;
         final int maxY = grid.size() - 1;
+        // to optimize parallelStream() usage, we need to attach initial grids to StartPos but this causes memory
+        // overflows. Instead, create Tuples of (StartPos, Grid)  and parallel process in chunks later.
         final List<StartPos> startPositions = createStartPositions(maxX, maxY);
-        final int startPositionSize = startPositions.size();
+        System.out.println(STR."Solution part 1: \{findEnergizedTiles(new StartPos(0, 0, 1), copyInitialGrid(grid))}");
+        /*
+        System.out.println(createStartPositions(maxX, maxY, maxX, maxY) + " 0 3");
+        System.out.println(createStartPositions(0, maxY, maxX, maxY) + " 0 1");
+        System.out.println(createStartPositions(0, 0, maxX, maxY) + " 1 2");
+        System.out.println(createStartPositions(maxX, 0, maxX, maxY) + " 2 3");
 
-        System.out.println(STR."Solution part 1: \{findEnergizedTiles(new StartPos(0, 0, 1), copyInitialGrid(grid), startPositionSize)}");
-
+        System.out.println(createStartPositions(maxX / 2, 0, maxX, maxY) + " 1 2 3");
+        System.out.println(createStartPositions(maxX, maxY / 2, maxX, maxY) + " 0 2 3");
+        System.out.println(createStartPositions(maxX / 2, maxY, maxX, maxY) + " 0 1 3");
+        System.out.println(createStartPositions(0, maxY / 2, maxX, maxY) + " 0 1 2");
+        System.out.println(createStartPositions(maxX / 2, maxY / 2, maxX, maxY) + " 0 1 3 4");
+         */
         final long startTime = System.currentTimeMillis();
-        //took 68,22 min, 8258 too high
-        System.out.println(STR."Solution part 2: \{startPositions.stream().map(startPos -> findEnergizedTiles(startPos, copyInitialGrid(grid), startPositionSize)).max(Integer::compare).orElseThrow()}");
+        //took 68,22 min, 8258 too high, 8034 to low
+        //System.out.println(STR."Solution part 2: \{startPositions.stream().parallel().map(startPos -> findEnergizedTiles(startPos, copyInitialGrid(grid))).max(Integer::compare).orElseThrow()}");
+
+        //took milliseconds
+        final int maxThreads = 15;
+        int max = 0;
+        for (int i = 0; i < 21; i += maxThreads) {
+            int finalI = i;
+            final List<Tuple> grids = IntStream.range(0, maxThreads).parallel().mapToObj(j -> new Tuple(startPositions.get(finalI + j), copyInitialGrid(grid))).toList();
+            max = Math.max(max, grids.parallelStream().map(tuple -> findEnergizedTiles(tuple.start, tuple.grid)).max(Comparator.naturalOrder()).orElseThrow());
+
+            if (processedPositions.addAndGet(maxThreads) % (100 + maxThreads) == 0) {
+                System.out.println(STR."\{String.format("Processed %.2f", ((1.0 / startPositions.size()) * (double) processedPositions.get()) * 100)} %");
+            }
+            System.out.println(STR."\{String.format("Processed %.2f", ((1.0 / startPositions.size()) * (double) processedPositions.get()) * 100)} %");
+        }
+        System.out.println(max);
         final long duration = System.currentTimeMillis() - startTime;
         System.out.println(STR."Calculations for \{startPositions.size()} took \{duration / 1000L} s");
+
     }
 
     private static List<List<Tile>> copyInitialGrid(final List<List<Tile>> grid) {
@@ -151,7 +181,7 @@ public class Solution {
         IntStream.rangeClosed(0, 3).forEach(dir -> {
             switch (dir) {
                 case 0:
-                    if (y > 0 && y + 1 <= maxY) {
+                    if (x <= maxX && y == maxY || y > 0 && y + 1 <= maxY) {
                         out.add(new StartPos(x, y, dir));
                     }
                     break;
@@ -161,7 +191,7 @@ public class Solution {
                     }
                     break;
                 case 2:
-                    if (y <= maxY) {
+                    if (y < maxY) {
                         out.add(new StartPos(x, y, dir));
                     }
                     break;
@@ -183,7 +213,7 @@ public class Solution {
         return out;
     }
 
-    private static int findEnergizedTiles(final StartPos start, final List<List<Tile>> grid, final int startPositions) {
+    private static int findEnergizedTiles(final StartPos start, final List<List<Tile>> grid) {
         final int maxX = grid.getFirst().size() - 1;
         final int maxY = grid.size() - 1;
         List<Beam> beams = new ArrayList<>();
@@ -209,11 +239,6 @@ public class Solution {
             beams = oldBeams;
             energizedTiles = findEnergizedTiles(grid);
         }
-        /*
-        if (processedPositions.incrementAndGet() % 100 == 0) {
-            System.out.println(STR."\{String.format("Processed %.2f", ((1.0 / startPositions) * (double) processedPositions.get()) * 100)} %");
-        }
-         */
         return energizedTiles.size();
     }
 

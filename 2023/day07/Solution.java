@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 public class Solution {
 
     public static void main(String[] args) {
-        final List<Hand> hands = parseFile("puzzle");
+        final List<Hand> hands = parseFile("ex_1");
         hands.sort((a, b) -> a.getKind().ordinal() - b.getKind().ordinal());
         hands.sort(Hand::compareTo);
         long winning = 0;
@@ -17,7 +17,8 @@ public class Solution {
             hand.setRank(i + 1);
             winning += (long) hand.getBid() * hand.getRank();
         }
-        //hands.forEach(System.out::println);
+
+        hands.forEach(System.out::println);
         //252485914 to low
         System.out.println("Solution part 1: " + winning);
 

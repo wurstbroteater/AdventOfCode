@@ -10,6 +10,10 @@ class Solution {
     record Report(List<Integer> levels) {
 
         boolean isSave() {
+            return hasValidNeighbours() && isIncreasing() || isDecreasing();
+        }
+
+        private boolean hasValidNeighbours() {
             for (int i = 1; i < levels.size(); i++) {
                 final int prev = levels.get(i - 1);
                 final int curr = levels.get(i);
@@ -18,7 +22,7 @@ class Solution {
                     return false;
                 }
             }
-            return isIncreasing() || isDecreasing();
+            return true;
         }
 
         private boolean isIncreasing() {

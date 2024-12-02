@@ -10,7 +10,7 @@ class Solution {
     record Report(List<Integer> levels) {
 
         boolean isSave() {
-            return hasValidNeighbours() && isIncreasing() || isDecreasing();
+            return hasValidNeighbours() && (isIncreasing() || isDecreasing());
         }
 
         private boolean hasValidNeighbours() {

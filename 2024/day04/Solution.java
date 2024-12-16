@@ -95,8 +95,8 @@ public class Solution {
                          * example in our int representation, ignoring the inner '3' and start reading the numbers
                          * clockwise beginning at the top right, we receive the String 4422. Doing so for the remaining
                          * 3 matrix transpositions yields in the strings checked here. This works because the order of
-                         * validNeighbours is assured by the order of Direction enum. Changing this the enum may break
-                         * this implementation.
+                         * validNeighbours is assured by the order of the Direction enum. Changing the enum order may
+                         * break this implementation.
                          */
                         occurrences += "4422".equals(validNeighbours) || "2442".equals(validNeighbours)
                                 || "2244".equals(validNeighbours) || "4224".equals(validNeighbours) ? 1L : 0L;

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class Solution {
+    private static final int END = 4;
+
     private record Point(int x, int y) {
         boolean isValid() {
             return x != -1 && y != -1;
@@ -25,31 +27,24 @@ public class Solution {
         Point next(final Point current, final List<String> grid) {
             final String row = grid.get(current.y());
             return switch (this) {
-                case North -> {
-                    final int nextX = current.x() + 1 < row.length() ? current.x() + 1 : -1;
-                    final int nextY = current.y() - 1 >= 0 ? current.y() - 1 : -1;
-                    yield new Point(nextX, nextY);
-                }
-                case West -> {
-                    final int nextX = current.x() - 1 >= 0 ? current.x() - 1 : -1;
-                    final int nextY = current.y() - 1 >= 0 ? current.y() - 1 : -1;
-                    yield new Point(nextX, nextY);
-                }
-                case East -> {
-                    final int nextX = current.x() + 1 < row.length() ? current.x() + 1 : -1;
-                    final int nextY = current.y() + 1 < grid.size() ? current.y() + 1 : -1;
-                    yield new Point(nextX, nextY);
-                }
-                case South -> {
-                    final int nextX = current.x() - 1 >= 0 ? current.x() - 1 : -1;
-                    final int nextY = current.y() + 1 < grid.size() ? current.y() + 1 : -1;
-                    yield new Point(nextX, nextY);
-                }
+                case North -> new Point(
+                        current.x() + 1 < row.length() ? current.x() + 1 : -1,
+                        current.y() - 1 >= 0 ? current.y() - 1 : -1);
+
+                case West -> new Point(
+                        current.x() - 1 >= 0 ? current.x() - 1 : -1,
+                        current.y() - 1 >= 0 ? current.y() - 1 : -1);
+
+                case East -> new Point(
+                        current.x() + 1 < row.length() ? current.x() + 1 : -1,
+                        current.y() + 1 < grid.size() ? current.y() + 1 : -1);
+
+                case South -> new Point(
+                        current.x() - 1 >= 0 ? current.x() - 1 : -1,
+                        current.y() + 1 < grid.size() ? current.y() + 1 : -1);
             };
         }
     }
-
-    private static final int END = 4;
 
     public static void main(String[] args) {
         for (final String input : List.of("ex_0", "puzzle")) {
@@ -93,13 +88,14 @@ public class Solution {
                             .toList();
                     if (validNeighbours.size() == 4) {
                         /*
-                         * the 4 valid neighbours are the diagonal neighbours of 'A' aka '3'. A valid combination of
-                         * such neighbours have to from the X with any shape "MAS". There are only 4 cases which fulfill
-                         * that criteria. The first is given the beginning of part two. By translating this example in
-                         * our int representation and start reading the numbers clockwise beginning at the top right, we
-                         * receive the String 4422. Doing so for the remaining 3 matrix transpositions yields in the
-                         * strings checked here. This works because the order of validNeighbours is assured by the order
-                         * Direction enum. Changing this the enum may break this implementation.
+                         * These 4 valid neighbours are the diagonal neighbours of 'A' aka '3'. A valid combination of
+                         * such neighbours has to from the X with any shape of "MAS". There are only 4 cases which
+                         * fulfill that criteria. The first is given in the beginning of part two. By translating this
+                         * example in our int representation, ignoring the inner '3' and start reading the numbers
+                         * clockwise beginning at the top right, we receive the String 4422. Doing so for the remaining
+                         * 3 matrix transpositions yields in the strings checked here. This works because the order of
+                         * validNeighbours is assured by the order of Direction enum. Changing this the enum may break
+                         * this implementation.
                          */
                         occurrences += Stream.of(validNeighbours.stream()
                                         .map(p -> String.valueOf(p.getChar(grid)))

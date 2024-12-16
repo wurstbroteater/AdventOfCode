@@ -81,12 +81,13 @@ public class Solution {
             for (int x = 0; x < row.length(); x++) {
                 final char curr = row.charAt(x);
                 if (curr == aChar) {
-                    final var sp = new Point(x, y);
-                    final var validNeighbours = Arrays.stream(Direction.values())
-                            .map(d -> d.next(sp, grid))
+                    final Point start = new Point(x, y);
+                    final String validNeighbours = Arrays.stream(Direction.values())
+                            .map(d -> d.next(start, grid))
                             .filter(Point::isValid)
-                            .toList();
-                    if (validNeighbours.size() == 4) {
+                            .map(p -> String.valueOf(p.getChar(grid)))
+                            .reduce("", String::concat);
+                    if (validNeighbours.length() == 4) {
                         /*
                          * These 4 valid neighbours are the diagonal neighbours of 'A' aka '3'. A valid combination of
                          * such neighbours has to from the X with any shape of "MAS". There are only 4 cases which
@@ -97,12 +98,8 @@ public class Solution {
                          * validNeighbours is assured by the order of Direction enum. Changing this the enum may break
                          * this implementation.
                          */
-                        occurrences += Stream.of(validNeighbours.stream()
-                                        .map(p -> String.valueOf(p.getChar(grid)))
-                                        .reduce("", String::concat))
-                                .mapToLong(s -> "4422".equals(s) || "2442".equals(s) || "2244".equals(s) || "4224".equals(s) ? 1L : 0L)
-                                //there is always exactly 1 item, so this reduce is always 0 + 1 or 0 + 0
-                                .reduce(0L, Long::sum);
+                        occurrences += "4422".equals(validNeighbours) || "2442".equals(validNeighbours)
+                                || "2244".equals(validNeighbours) || "4224".equals(validNeighbours) ? 1L : 0L;
                     }
                 }
             }

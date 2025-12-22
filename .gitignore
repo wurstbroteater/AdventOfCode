@@ -1,6 +1,8 @@
 **/*.class
 **/*.iml
 **/puzzle
+**/ex*
+**/sample*
 
 **/.idea
 **/out

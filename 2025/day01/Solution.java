@@ -21,16 +21,26 @@ public class Solution {
             int part1 = 0;
             int part2 = 0;
             for (final Spin spin : spins) {
-                final int old = dial;
-                final int times = (old + spin.distance()) / 100;
-                dial = nextDial(spin, dial);
-                if (dial == 0) {
+                final int full = spin.distance() / 100;
+                int partial = spin.distance() % 100;
+                part2 += full;
+
+                final int delta = (spin.rotation == Rotation.LEFT) ? -partial : partial;
+                final int nextPosition = dial + delta;
+
+                if (dial != 0) {
+                    if (spin.rotation == Rotation.LEFT && nextPosition <= 0) {
+                        part2 += 1;
+                    }
+                    if (spin.rotation == Rotation.RIGHT && nextPosition >= 100) {
+                        part2 += 1;
+                    }
+                } else {
                     part1++;
                 }
-                if (times > 0) {
 
-                    part2 += times;
-                }
+                dial = Math.floorMod(nextPosition, 100);
+
                 //System.out.printf("[%s%d] dial from %d to %d times %d\n", spin.rotation.name().charAt(0), spin.distance, old, dial, times);
                 if (dial < 0) {
                     throw new AssertionError("Dial can't be negative");
@@ -38,7 +48,7 @@ public class Solution {
             }
             //1034
             System.out.printf("[%s] Part 1: %d %n", input, part1);
-            //4661 to low, 4971, 5101, 5920 inco
+            //6166
             System.out.printf("[%s] Part 2: %d %n", input, part2);
         }
     }

@@ -10,26 +10,9 @@ import java.util.stream.Stream;
 public class Solution {
 
     private record IdRange(long start, long end) {
-
         @Override
         public String toString() {
             return start + "-" + end;
-        }
-
-        private List<Long> find() {
-            List<Long> out = new ArrayList<>();
-            for (long i = start; i <= end(); i++) {
-                final String current = String.valueOf(i);
-                if (current.length() % 2 != 0) {
-                    continue;
-                }
-                final int mid = current.length() / 2;
-                final String first = current.substring(0, mid);
-                if (first.equals(current.substring(mid))) {
-                    out.add(i);
-                }
-            }
-            return out;
         }
     }
 
@@ -40,12 +23,28 @@ public class Solution {
             List<IdRange> ranges = parseFile(input);
 
             System.out.printf("[%s] Solution part 1: %d%n", input, ranges.stream()
-                    .map(IdRange::find)
+                    .map(Solution::part1)
                     .filter(l -> !l.isEmpty())
                     .flatMap(List::stream).toList().stream()
                     .reduce(0L, Long::sum));
 
         }
+    }
+
+    private static List<Long> part1(final IdRange range) {
+        List<Long> out = new ArrayList<>();
+        for (long i = range.start(); i <= range.end(); i++) {
+            final String current = String.valueOf(i);
+            if (current.length() % 2 != 0) {
+                continue;
+            }
+            final int mid = current.length() / 2;
+            final String first = current.substring(0, mid);
+            if (first.equals(current.substring(mid))) {
+                out.add(i);
+            }
+        }
+        return out;
     }
 
     private static List<IdRange> parseFile(final String name) {
